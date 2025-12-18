@@ -68,6 +68,7 @@ if img:
         else:
             st.error("No barcode detected")
 
+# -------- PRODUCT DETAILS --------
 if product:
     st.subheader("Product Details")
     st.json(product)
@@ -76,6 +77,7 @@ if product:
         add_cart(product["name"], product["price"], qty)
         st.success("Added to cart")
 
+# -------- MANUAL ENTRY --------
 with st.expander("✍ Manual Product Entry"):
     name = st.text_input("Product Name")
     price = st.number_input("Price", 0.0, 10000.0)
@@ -87,5 +89,30 @@ with st.expander("✍ Manual Product Entry"):
         else:
             st.error("Enter valid product name & price")
 
+# -------- CART --------
 st.subheader("🛒 Cart")
-if s
+
+if st.session_state.cart:
+    df = pd.DataFrame(st.session_state.cart)
+    st.dataframe(df, use_container_width=True)
+
+    subtotal = df["Total"].sum()
+    tax = st.slider("Tax %", 0, 28, 5)
+    total = subtotal + subtotal * tax / 100
+
+    st.metric("Subtotal", f"${subtotal:.2f}")
+    st.metric("Total", f"${total:.2f}")
+
+    if st.button("🧾 Generate Invoice"):
+        st.markdown(f"""
+        ### Invoice
+        Date: {datetime.now().strftime('%d-%m-%Y %H:%M')}
+        ```
+        {df}
+        ```
+        Subtotal: ${subtotal:.2f}  
+        Tax: {tax}%  
+        **Grand Total: ${total:.2f}**
+        """)
+else:
+    st.info("Cart empty")
